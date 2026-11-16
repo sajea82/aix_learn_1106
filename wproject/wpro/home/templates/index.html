@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <h1>메인페이지</h1>
+    <div>
+        <label>길이,높이,넓이를 입력하세요.</label><br/>
+        <input type="text" name='date' id='data'>
+        <button type='button' id='predictBtn'>예측</button>
+        <br>
+        <br>
+        <div id='result'>입력데이터 :  {{result}} </div>
+        <div id='result2'>예측무게 : {{result2}}  </div>
+    </div>
+
+    <script>
+        $(function(){
+            
+            $(document).on('click', '#predictBtn', function(){
+                let userInput = $('#data').val();
+                
+                $.ajax({
+                    url: '/ajax_data/',     
+                    type: 'post',
+                    headers: {'X-CSRFToken': '{{csrf_token}}'},
+                    data: {'data': userInput},
+                    dataType: 'json',
+                    success: function(response){
+                        alert('데이터 전송 성공');
+                        console.log(response);
+                        $('#result').text("입력데이터 : "+ response.result);
+                        $('#result2').text("예측결과 : "+ response.result2);
+                    },
+                    error: function(){
+                        alert('통신 실패');
+                    }
+                });//ajax
+            });//predictBtn click
+        });//jQuery ready
+    </script>
+</body>
+</html>
