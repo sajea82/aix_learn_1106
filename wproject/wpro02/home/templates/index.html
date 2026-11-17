@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>생선 품종 분류 예측</title>
+    <script>
+        function sendBtn(){
+            const send_data = $('#data').val();
+            console.log("전송 데이터 : " + send_data);
+
+            $.ajax({
+                url: '/ajax_data/',
+                type: 'post',
+                headers: {'X-CSRFToken': '{{csrf_token}}'},
+                data: {'data': send_data},
+                dataType: 'json',
+                success: function(data){ 
+                    alert('예측 데이터를 가져옵니다. 성공');
+                    console.log(data);
+                    
+                    // 1. 입력 수치 출력
+                    $('#result').text(send_data);
+                    
+                    // 2. ⭐ [추가] 전체 품종별 확률 배열(전체 데이터)을 텍스트로 함께 출력
+                    $('#result_all').text(JSON.stringify(data.probabilities));
+
+                    // 3. 예측 생선 및 확률 출력
+                    $('#result_species').text(data.result_data);
+                    $('#result_prob').text(data.probability);
+
+                    // Chart.js 그래프 생성
+                    const ctx = document.getElementById('myChart');
+
+                    let chartStatus = Chart.getChart("myChart");
+                    if(chartStatus != undefined){
+                        chartStatus.destroy(); // 기존 그래프 리셋
+                    }
+
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Bream', 'Parkki', 'Perch', 'Pike', 'Roach', 'Smelt', 'Whitefish'], 
+                            datasets: [{
+                                label: '생선 품종별 예측 확률',
+                                data: data.probabilities, 
+                                borderWidth: 1,
+                                barThickness: 35 
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 1.0 
+                                }
+                            }
+                        }
+                    });
+
+                },
+                error: function(){
+                    alert('예측하는데 오류가 발생했습니다. 다시 시도해주세요.');
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>메인페이지</h1>
+    <div>
+        <label>무게, 길이, 대각선, 높이, 넓이를 입력하세요.</label><br/>
+        <input type='text' name='data' id='data'>
+        <button type='button' onclick='sendBtn()'>예측</button>
+        <br><br>
+        <!-- ⭐ 전체 품종별 확률 배열이 출력될 영역 추가 -->
+        <div>전체확률데이터 : <span id='result_all'>?</span></div>
+        <div>예측생선 : <span id='result_species'>?</span></div>
+        <div>예측확률 : <span id='result_prob'>?</span></div>
+    </div>
+
+    <br>
+    <!-- 차트 전체 크기 조절 (width, height 수정) -->
+    <div style="width: 600px; height: 350px; position: relative;">
+        <canvas id="myChart"></canvas>
+    </div>
+</body>
+</html>
