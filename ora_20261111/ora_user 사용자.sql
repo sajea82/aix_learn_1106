@@ -11,3 +11,26 @@ create table stuscore (
     avg number(5,2),
     specialty varchar2(50)
 );
+
+select * from  stuscore;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
